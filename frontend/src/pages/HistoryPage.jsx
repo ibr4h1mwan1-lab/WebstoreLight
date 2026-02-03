@@ -19,16 +19,7 @@ const getRankColor = (rankName) => {
 };
 
 const PurchaseCard = ({ purchase }) => {
-  const [copied, setCopied] = useState(false);
   const rankColor = getRankColor(purchase.rank_name);
-
-  const handleCopyCode = () => {
-    if (purchase.redeem_code) {
-      navigator.clipboard.writeText(purchase.redeem_code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -43,7 +34,7 @@ const PurchaseCard = ({ purchase }) => {
 
   return (
     <div className="bg-[#16161b] border border-gray-800/50 rounded-xl p-5 hover:border-gray-700/70 transition-all">
-      <div className="flex items-start justify-between gap-4 mb-4">
+      <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
           <div 
             className="w-12 h-12 rounded-lg flex items-center justify-center"
@@ -66,28 +57,6 @@ const PurchaseCard = ({ purchase }) => {
           </span>
         </div>
       </div>
-
-      {/* Redeem Code */}
-      {purchase.redeem_code && (
-        <div className="bg-[#0f0f13] border border-gray-700/50 rounded-lg p-3">
-          <p className="text-gray-400 text-xs mb-1">Redeem Code:</p>
-          <div className="flex items-center justify-between gap-2">
-            <code className="text-sm font-mono font-bold" style={{ color: rankColor }}>
-              {purchase.redeem_code}
-            </code>
-            <button
-              onClick={handleCopyCode}
-              className="p-1.5 rounded hover:bg-gray-700/50 transition-colors"
-            >
-              {copied ? (
-                <Check className="w-4 h-4 text-green-500" />
-              ) : (
-                <Copy className="w-4 h-4 text-gray-400" />
-              )}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
