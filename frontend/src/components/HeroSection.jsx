@@ -14,25 +14,14 @@ const HeroSection = () => {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image */}
+      {/* Background Image - Minecraft Winter Village */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=1920&q=80')`,
+          backgroundImage: `url('https://images.unsplash.com/photo-1760111102749-bf6492ddd2ff?w=1920&q=80')`,
         }}
       >
-        {/* Minecraft style winter village overlay - using a gradient overlay instead */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#1a1625]/70 via-[#1a1625]/50 to-[#0f0f13]" />
-      </div>
-
-      {/* Minecraft Village Background with darker overlay */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url('https://i.imgur.com/xvYzQqK.jpg')`,
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0f0f13]/30 to-[#0f0f13]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1a1625]/60 via-[#1a1625]/40 to-[#0f0f13]" />
       </div>
 
       {/* Content */}
