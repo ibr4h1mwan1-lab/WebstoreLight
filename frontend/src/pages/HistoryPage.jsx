@@ -8,7 +8,9 @@ const getRankColor = (rankName) => {
   const colors = {
     'Prime': '#22c55e',
     'Elite': '#F59E0B',
-    'Ace': '#8B5CF6'
+    'Ace': '#8B5CF6',
+    'Immortal': '#EC4899',
+    'Supreme': '#EAB308'
   };
   return colors[rankName] || '#8B5CF6';
 };
