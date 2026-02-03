@@ -3,6 +3,7 @@
 export const serverInfo = {
   name: "SNOWY MC",
   ip: "play.snowymc.in",
+  port: "25570",
   discordUrl: "https://discord.gg/snowymc"
 };
 
