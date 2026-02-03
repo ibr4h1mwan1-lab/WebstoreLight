@@ -19,16 +19,9 @@ const FeatureItem = ({ feature, color }) => (
 
 const RankCard = ({ rank, onPurchase }) => (
   <div className="bg-[#16161b] border border-gray-800/50 rounded-xl p-6 hover:border-gray-700/70 transition-all duration-300 flex flex-col h-full">
-    {/* Header with Image and Info */}
-    <div className="flex items-center gap-4 mb-6">
-      {/* Rank Image - Left Side */}
-      <img 
-        src={rank.image} 
-        alt={`${rank.name} Rank`}
-        className="w-24 h-24 object-contain flex-shrink-0"
-      />
-      
-      {/* Rank Name & Price - Right Side */}
+    {/* Header with Info and Image */}
+    <div className="flex items-center justify-between gap-4 mb-6">
+      {/* Rank Name & Price - Left Side */}
       <div className="flex-1">
         <div 
           className="w-12 h-1 rounded-full mb-3"
@@ -45,6 +38,13 @@ const RankCard = ({ rank, onPurchase }) => (
           <span className="text-gray-500 text-sm">{rank.currency}</span>
         </div>
       </div>
+      
+      {/* Rank Image - Right Side */}
+      <img 
+        src={rank.image} 
+        alt={`${rank.name} Rank`}
+        className="w-32 h-32 object-contain flex-shrink-0"
+      />
     </div>
     
     {/* Features List */}
