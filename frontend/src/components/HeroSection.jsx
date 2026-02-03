@@ -7,7 +7,7 @@ const HeroSection = () => {
   const [copied, setCopied] = useState(false);
 
   const handleCopyIP = () => {
-    navigator.clipboard.writeText(serverInfo.ip);
+    navigator.clipboard.writeText(`${serverInfo.ip}:${serverInfo.port}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
