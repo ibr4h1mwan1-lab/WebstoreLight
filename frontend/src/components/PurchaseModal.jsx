@@ -1,10 +1,24 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { X, User, CreditCard, CheckCircle, Copy, Check } from 'lucide-react';
-import useRazorpay from 'react-razorpay';
 import axios from 'axios';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+
+// Load Razorpay script
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
 
 const PurchaseModal = ({ rank, isOpen, onClose }) => {
   const [username, setUsername] = useState('');
@@ -12,7 +26,13 @@ const PurchaseModal = ({ rank, isOpen, onClose }) => {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [redeemCode, setRedeemCode] = useState('');
   const [copied, setCopied] = useState(false);
-  const [Razorpay] = useRazorpay();
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+
+  useEffect(() => {
+    loadRazorpayScript().then((loaded) => {
+      setRazorpayLoaded(loaded);
+    });
+  }, []);
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(redeemCode);
@@ -31,7 +51,7 @@ const PurchaseModal = ({ rank, isOpen, onClose }) => {
 
   const handlePayment = useCallback(async (e) => {
     e.preventDefault();
-    if (!username.trim() || !rank) return;
+    if (!username.trim() || !rank || !razorpayLoaded) return;
     
     setIsProcessing(true);
     
@@ -90,7 +110,7 @@ const PurchaseModal = ({ rank, isOpen, onClose }) => {
       };
       
       // Open Razorpay checkout
-      const razorpayInstance = new Razorpay(options);
+      const razorpayInstance = new window.Razorpay(options);
       razorpayInstance.on('payment.failed', (response) => {
         console.error('Payment failed:', response.error);
         alert(`Payment failed: ${response.error.description}`);
@@ -103,7 +123,7 @@ const PurchaseModal = ({ rank, isOpen, onClose }) => {
       alert('Failed to create order. Please try again.');
       setIsProcessing(false);
     }
-  }, [username, rank, Razorpay]);
+  }, [username, rank, razorpayLoaded]);
 
   if (!isOpen || !rank) return null;
 
@@ -230,7 +250,7 @@ const PurchaseModal = ({ rank, isOpen, onClose }) => {
           
           <button
             type="submit"
-            disabled={isProcessing || !username.trim()}
+            disabled={isProcessing || !username.trim() || !razorpayLoaded}
             className="w-full py-3 rounded-lg font-semibold transition-all duration-200 uppercase tracking-wider text-sm disabled:opacity-50 disabled:cursor-not-allowed text-white"
             style={{ backgroundColor: rank.color }}
           >
