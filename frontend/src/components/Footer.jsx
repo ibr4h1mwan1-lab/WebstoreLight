@@ -1,5 +1,6 @@
 import React from 'react';
 import { MessageCircle, FileText } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { serverInfo } from '../data/mock';
 
 const Footer = () => {
@@ -28,13 +29,13 @@ const Footer = () => {
               <MessageCircle className="w-4 h-4" />
               Discord
             </a>
-            <a
-              href="#"
+            <Link
+              to="/refund"
               className="flex items-center gap-2 hover:text-white transition-colors"
             >
               <FileText className="w-4 h-4" />
               Refund Policy
-            </a>
+            </Link>
             <span>© 2025 SNOWY MC. All rights reserved.</span>
           </div>
         </div>
