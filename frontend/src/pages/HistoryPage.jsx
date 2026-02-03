@@ -194,7 +194,7 @@ const HistoryPage = () => {
               </div>
               <h3 className="text-white font-semibold mb-2">Search Your History</h3>
               <p className="text-gray-400 text-sm">
-                Enter your Minecraft username above to view all your rank purchases and redeem codes.
+                Enter your Minecraft username above to view all your rank purchases.
               </p>
             </div>
           )}
