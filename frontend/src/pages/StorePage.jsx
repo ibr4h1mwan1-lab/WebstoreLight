@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import RanksGrid from '../components/RanksGrid';
+import RanksGrid from '../components/RanksGrid.js';
 import PurchaseModal from '../components/PurchaseModal';
 
 const StorePage = () => {
