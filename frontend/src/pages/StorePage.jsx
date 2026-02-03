@@ -19,29 +19,43 @@ const FeatureItem = ({ feature, color }) => (
 
 const RankCard = ({ rank, onPurchase }) => (
   <div className="bg-[#16161b] border border-gray-800/50 rounded-xl p-6 hover:border-gray-700/70 transition-all duration-300 flex flex-col h-full">
+    {/* Rank Image */}
+    <div className="flex justify-center mb-4">
+      <img 
+        src={rank.image} 
+        alt={`${rank.name} Rank`}
+        className="w-20 h-20 object-contain"
+      />
+    </div>
+    
+    {/* Top colored bar */}
     <div 
-      className="w-16 h-1 rounded-full mb-6"
+      className="w-16 h-1 rounded-full mb-4 mx-auto"
       style={{ backgroundColor: rank.color }}
     />
     
+    {/* Rank Name */}
     <h3 
-      className="text-2xl font-bold mb-2"
+      className="text-2xl font-bold mb-2 text-center"
       style={{ color: rank.color }}
     >
       {rank.name}
     </h3>
     
-    <div className="flex items-baseline gap-2 mb-6">
+    {/* Price */}
+    <div className="flex items-baseline justify-center gap-2 mb-6">
       <span className="text-3xl font-bold text-white">₹{rank.price}</span>
       <span className="text-gray-500 text-sm">{rank.currency}</span>
     </div>
     
+    {/* Features List */}
     <div className="flex-1 space-y-3 mb-6">
       {rank.features.map((feature, idx) => (
         <FeatureItem key={idx} feature={feature} color={rank.color} />
       ))}
     </div>
     
+    {/* Purchase Button */}
     <button
       onClick={() => onPurchase(rank)}
       className="w-full py-3 rounded-lg font-semibold transition-all duration-200 hover:scale-[1.02] uppercase tracking-wider text-sm text-white"
@@ -71,7 +85,7 @@ const StorePage = () => {
       <Navbar />
       
       <main className="flex-1 pt-24 pb-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
               Server <span className="text-[#F59E0B]">Ranks</span>
@@ -81,8 +95,16 @@ const StorePage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {ranks.map((rank) => (
+          {/* Top Row - 3 Ranks */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            {ranks.slice(0, 3).map((rank) => (
+              <RankCard key={rank.id} rank={rank} onPurchase={handlePurchase} />
+            ))}
+          </div>
+
+          {/* Bottom Row - 2 Ranks Centered */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            {ranks.slice(3, 5).map((rank) => (
               <RankCard key={rank.id} rank={rank} onPurchase={handlePurchase} />
             ))}
           </div>
