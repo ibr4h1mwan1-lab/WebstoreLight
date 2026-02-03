@@ -12,8 +12,6 @@ from datetime import datetime, timezone
 import razorpay
 import hmac
 import hashlib
-import secrets
-import string
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -35,6 +33,35 @@ app = FastAPI()
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
+# Predefined Redeem Codes
+REDEEM_CODES = {
+    "Prime": [
+        "PRIME-19F18H1", "PRIME-7A3K9Q2", "PRIME-X8M4P6R", "PRIME-2L9D7WJ", "PRIME-H5Q8Z1A",
+        "PRIME-4N6C9T8", "PRIME-KR7M2E5", "PRIME-P8D3F6X", "PRIME-9WJ4L7Q", "PRIME-Z1A5H8C",
+        "PRIME-6T2N9M4", "PRIME-Q7P5X8R", "PRIME-3E6KJ9D", "PRIME-M8C2A7L", "PRIME-5R9H4N6"
+    ],
+    "Elite": [
+        "ELITE-4P9XK7H", "ELITE-M6R3Q2N", "ELITE-8A7JH5C", "ELITE-ZP4E9L6", "ELITE-2D8NQK7",
+        "ELITE-HM9R4X5", "ELITE-7C6P3A8", "ELITE-K2Z9E4J", "ELITE-Q8L5H7N", "ELITE-6R4X2M9",
+        "ELITE-A9C7P5D", "ELITE-JH8Z6K3", "ELITE-5N4R9X7", "ELITE-E6Q2M8P", "ELITE-9K7H5A4"
+    ],
+    "Ace": [
+        "ACE-9H4K2P7", "ACE-X6M8A5R", "ACE-3Q9N7H4", "ACE-K5P2D8X", "ACE-7R6A9M4",
+        "ACE-2H8Q5KX", "ACE-N7P9R4D", "ACE-MA8X6H5", "ACE-4Q2K9P7", "ACE-8D5R6A9",
+        "ACE-XP7H2M4", "ACE-9A6NQ8K", "ACE-5H4R7D2", "ACE-KM9P6X8", "ACE-2Q7A4H5"
+    ],
+    "Immortal": [
+        "IMMORTAL-7X9H4K", "IMMORTAL-R8M5A2", "IMMORTAL-6P9QX7", "IMMORTAL-H4N8K2", "IMMORTAL-A9R6M5",
+        "IMMORTAL-2X7H8P", "IMMORTAL-Q9K4R6", "IMMORTAL-5A8M7N", "IMMORTAL-XP4H9K", "IMMORTAL-8R6Q2A",
+        "IMMORTAL-N5M7X9", "IMMORTAL-K4P2H8", "IMMORTAL-9A6R7Q", "IMMORTAL-HX8M5K", "IMMORTAL-2P9N4A"
+    ],
+    "Supreme": [
+        "SUPREME-9KX4H7", "SUPREME-MA8R2P", "SUPREME-Q7H5K9", "SUPREME-4X2N8A", "SUPREME-R9P6M7",
+        "SUPREME-HK8A5X", "SUPREME-2Q9R4M", "SUPREME-A7XK8H", "SUPREME-P5N9R6", "SUPREME-M4A2X7",
+        "SUPREME-8K9H5Q", "SUPREME-R6P7A4", "SUPREME-XN2M8H", "SUPREME-9A5K4R", "SUPREME-H7Q8P2"
+    ]
+}
+
 
 # Define Models
 class StatusCheck(BaseModel):
@@ -51,12 +78,12 @@ class StatusCheckCreate(BaseModel):
 class CreateOrderRequest(BaseModel):
     rank_id: int
     rank_name: str
-    amount: int  # Amount in INR (will be converted to paise)
+    amount: int
     username: str
 
 class CreateOrderResponse(BaseModel):
     order_id: str
-    amount: int  # Amount in paise
+    amount: int
     currency: str
     key_id: str
 
@@ -89,13 +116,11 @@ class Purchase(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: Optional[datetime] = None
 
-
-def generate_redeem_code(rank_name: str) -> str:
-    """Generate a unique redeem code for the rank"""
-    # Format: SNOWY-{RANK_PREFIX}-{RANDOM_CODE}
-    rank_prefix = rank_name[:3].upper()
-    random_part = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(8))
-    return f"SNOWY-{rank_prefix}-{random_part}"
+class RankStock(BaseModel):
+    rank_name: str
+    total: int
+    available: int
+    in_stock: bool
 
 
 def verify_razorpay_signature(order_id: str, payment_id: str, signature: str) -> bool:
@@ -108,6 +133,73 @@ def verify_razorpay_signature(order_id: str, payment_id: str, signature: str) ->
         hashlib.sha256
     ).hexdigest()
     return hmac.compare_digest(generated_signature, signature)
+
+
+async def initialize_redeem_codes():
+    """Initialize redeem codes in database if not already present"""
+    for rank_name, codes in REDEEM_CODES.items():
+        for code in codes:
+            existing = await db.redeem_codes.find_one({"code": code})
+            if not existing:
+                await db.redeem_codes.insert_one({
+                    "code": code,
+                    "rank_name": rank_name,
+                    "used": False,
+                    "username": None,
+                    "used_at": None,
+                    "order_id": None,
+                    "payment_id": None
+                })
+    logger.info("Redeem codes initialized")
+
+
+async def get_available_code(rank_name: str) -> Optional[str]:
+    """Get an available redeem code for the rank"""
+    code_doc = await db.redeem_codes.find_one({
+        "rank_name": rank_name,
+        "used": False
+    })
+    if code_doc:
+        return code_doc["code"]
+    return None
+
+
+async def mark_code_as_used(code: str, username: str, order_id: str, payment_id: str):
+    """Mark a redeem code as used"""
+    await db.redeem_codes.update_one(
+        {"code": code},
+        {
+            "$set": {
+                "used": True,
+                "username": username,
+                "used_at": datetime.now(timezone.utc).isoformat(),
+                "order_id": order_id,
+                "payment_id": payment_id
+            }
+        }
+    )
+
+
+async def get_rank_stock(rank_name: str) -> dict:
+    """Get stock information for a rank"""
+    total = len(REDEEM_CODES.get(rank_name, []))
+    used_count = await db.redeem_codes.count_documents({
+        "rank_name": rank_name,
+        "used": True
+    })
+    available = total - used_count
+    return {
+        "rank_name": rank_name,
+        "total": total,
+        "available": available,
+        "in_stock": available > 0
+    }
+
+
+# Startup event to initialize codes
+@app.on_event("startup")
+async def startup_event():
+    await initialize_redeem_codes()
 
 
 # Add your routes to the router instead of directly to app
@@ -137,11 +229,35 @@ async def get_status_checks():
     return status_checks
 
 
+# Stock Check Endpoint
+@api_router.get("/stock")
+async def get_all_stock():
+    """Get stock information for all ranks"""
+    stock_info = {}
+    for rank_name in REDEEM_CODES.keys():
+        stock = await get_rank_stock(rank_name)
+        stock_info[rank_name] = stock
+    return stock_info
+
+
+@api_router.get("/stock/{rank_name}")
+async def get_rank_stock_info(rank_name: str):
+    """Get stock information for a specific rank"""
+    if rank_name not in REDEEM_CODES:
+        raise HTTPException(status_code=404, detail="Rank not found")
+    return await get_rank_stock(rank_name)
+
+
 # Razorpay Payment Routes
 @api_router.post("/create-order", response_model=CreateOrderResponse)
 async def create_order(request: CreateOrderRequest):
     """Create a Razorpay order for rank purchase"""
     try:
+        # Check if rank is in stock
+        stock = await get_rank_stock(request.rank_name)
+        if not stock["in_stock"]:
+            raise HTTPException(status_code=400, detail=f"{request.rank_name} rank is out of stock")
+        
         # Amount in paise (multiply by 100)
         amount_paise = request.amount * 100
         
@@ -184,6 +300,8 @@ async def create_order(request: CreateOrderRequest):
             key_id=os.environ.get('RAZORPAY_KEY_ID', '')
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating order: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to create order: {str(e)}")
@@ -191,7 +309,7 @@ async def create_order(request: CreateOrderRequest):
 
 @api_router.post("/verify-payment", response_model=PaymentVerificationResponse)
 async def verify_payment(request: VerifyPaymentRequest):
-    """Verify Razorpay payment and generate redeem code"""
+    """Verify Razorpay payment and assign redeem code"""
     try:
         # Verify signature
         is_valid = verify_razorpay_signature(
@@ -204,8 +322,20 @@ async def verify_payment(request: VerifyPaymentRequest):
             logger.warning(f"Invalid signature for order: {request.razorpay_order_id}")
             raise HTTPException(status_code=400, detail="Invalid payment signature")
         
-        # Generate redeem code
-        redeem_code = generate_redeem_code(request.rank_name)
+        # Get available redeem code
+        redeem_code = await get_available_code(request.rank_name)
+        
+        if not redeem_code:
+            logger.error(f"No available codes for rank: {request.rank_name}")
+            raise HTTPException(status_code=400, detail=f"{request.rank_name} rank is out of stock")
+        
+        # Mark code as used
+        await mark_code_as_used(
+            redeem_code,
+            request.username,
+            request.razorpay_order_id,
+            request.razorpay_payment_id
+        )
         
         # Update purchase in database
         await db.purchases.update_one(
@@ -219,18 +349,6 @@ async def verify_payment(request: VerifyPaymentRequest):
                 }
             }
         )
-        
-        # Also save to redeem_codes collection for easy lookup
-        await db.redeem_codes.insert_one({
-            "code": redeem_code,
-            "rank_name": request.rank_name,
-            "username": request.username,
-            "amount": request.amount,
-            "order_id": request.razorpay_order_id,
-            "payment_id": request.razorpay_payment_id,
-            "redeemed": False,
-            "created_at": datetime.now(timezone.utc).isoformat()
-        })
         
         logger.info(f"Payment verified for order: {request.razorpay_order_id}, redeem code: {redeem_code}")
         
