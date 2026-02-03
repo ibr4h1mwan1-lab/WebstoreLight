@@ -5,13 +5,42 @@ import { donationHistory } from '../data/mock';
 import { Clock, User, Award } from 'lucide-react';
 
 const getRankColor = (rankName) => {
-  switch (rankName) {
-    case 'Prime': return '#22c55e';
-    case 'Elite': return '#F59E0B';
-    case 'Ace': return '#8B5CF6';
-    default: return '#8B5CF6';
-  }
+  const colors = {
+    'Prime': '#22c55e',
+    'Elite': '#F59E0B',
+    'Ace': '#8B5CF6'
+  };
+  return colors[rankName] || '#8B5CF6';
 };
+
+const HistoryRow = ({ item }) => (
+  <div className="grid grid-cols-4 gap-4 px-6 py-4 hover:bg-[#1a1a20] transition-colors">
+    <div className="text-white font-medium">
+      {item.username}
+    </div>
+    <div>
+      <span 
+        className="px-3 py-1 rounded-full text-xs font-medium"
+        style={{ 
+          backgroundColor: `${getRankColor(item.rank)}20`,
+          color: getRankColor(item.rank)
+        }}
+      >
+        {item.rank}
+      </span>
+    </div>
+    <div className="text-gray-300">
+      ₹{item.amount}
+    </div>
+    <div className="text-gray-500">
+      {new Date(item.date).toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      })}
+    </div>
+  </div>
+);
 
 const HistoryPage = () => {
   return (
@@ -20,7 +49,6 @@ const HistoryPage = () => {
       
       <main className="flex-1 pt-24 pb-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
           <div className="text-center mb-10">
             <div className="w-16 h-16 bg-[#8B5CF6]/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Clock className="w-8 h-8 text-[#8B5CF6]" />
@@ -33,9 +61,7 @@ const HistoryPage = () => {
             </p>
           </div>
 
-          {/* History Table */}
           <div className="bg-[#16161b] border border-gray-800/50 rounded-2xl overflow-hidden">
-            {/* Table Header */}
             <div className="grid grid-cols-4 gap-4 px-6 py-4 bg-[#0f0f13] border-b border-gray-800/50">
               <div className="text-gray-400 text-sm font-medium flex items-center gap-2">
                 <User className="w-4 h-4" />
@@ -53,43 +79,13 @@ const HistoryPage = () => {
               </div>
             </div>
 
-            {/* Table Body */}
             <div className="divide-y divide-gray-800/50">
               {donationHistory.map((item) => (
-                <div 
-                  key={item.id}
-                  className="grid grid-cols-4 gap-4 px-6 py-4 hover:bg-[#1a1a20] transition-colors"
-                >
-                  <div className="text-white font-medium">
-                    {item.username}
-                  </div>
-                  <div>
-                    <span 
-                      className="px-3 py-1 rounded-full text-xs font-medium"
-                      style={{ 
-                        backgroundColor: `${getRankColor(item.rank)}20`,
-                        color: getRankColor(item.rank)
-                      }}
-                    >
-                      {item.rank}
-                    </span>
-                  </div>
-                  <div className="text-gray-300">
-                    ₹{item.amount}
-                  </div>
-                  <div className="text-gray-500">
-                    {new Date(item.date).toLocaleDateString('en-IN', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric'
-                    })}
-                  </div>
-                </div>
+                <HistoryRow key={item.id} item={item} />
               ))}
             </div>
           </div>
 
-          {/* Info Text */}
           <p className="text-center text-gray-500 text-sm mt-6">
             Showing recent purchases. Thank you to all our supporters!
           </p>
