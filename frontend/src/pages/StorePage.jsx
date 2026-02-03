@@ -43,7 +43,7 @@ const RankCard = ({ rank, onPurchase }) => (
       <img 
         src={rank.image} 
         alt={`${rank.name} Rank`}
-        className="w-32 h-32 object-contain flex-shrink-0"
+        className="w-44 h-44 object-contain flex-shrink-0"
       />
     </div>
     
