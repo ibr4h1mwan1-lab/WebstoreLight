@@ -19,33 +19,32 @@ const FeatureItem = ({ feature, color }) => (
 
 const RankCard = ({ rank, onPurchase }) => (
   <div className="bg-[#16161b] border border-gray-800/50 rounded-xl p-6 hover:border-gray-700/70 transition-all duration-300 flex flex-col h-full">
-    {/* Rank Image */}
-    <div className="flex justify-center mb-4">
+    {/* Header with Image and Info */}
+    <div className="flex items-center gap-4 mb-6">
+      {/* Rank Image - Left Side */}
       <img 
         src={rank.image} 
         alt={`${rank.name} Rank`}
-        className="w-20 h-20 object-contain"
+        className="w-24 h-24 object-contain flex-shrink-0"
       />
-    </div>
-    
-    {/* Top colored bar */}
-    <div 
-      className="w-16 h-1 rounded-full mb-4 mx-auto"
-      style={{ backgroundColor: rank.color }}
-    />
-    
-    {/* Rank Name */}
-    <h3 
-      className="text-2xl font-bold mb-2 text-center"
-      style={{ color: rank.color }}
-    >
-      {rank.name}
-    </h3>
-    
-    {/* Price */}
-    <div className="flex items-baseline justify-center gap-2 mb-6">
-      <span className="text-3xl font-bold text-white">₹{rank.price}</span>
-      <span className="text-gray-500 text-sm">{rank.currency}</span>
+      
+      {/* Rank Name & Price - Right Side */}
+      <div className="flex-1">
+        <div 
+          className="w-12 h-1 rounded-full mb-3"
+          style={{ backgroundColor: rank.color }}
+        />
+        <h3 
+          className="text-2xl font-bold mb-1"
+          style={{ color: rank.color }}
+        >
+          {rank.name}
+        </h3>
+        <div className="flex items-baseline gap-2">
+          <span className="text-2xl font-bold text-white">₹{rank.price}</span>
+          <span className="text-gray-500 text-sm">{rank.currency}</span>
+        </div>
+      </div>
     </div>
     
     {/* Features List */}
