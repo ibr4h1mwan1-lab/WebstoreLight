@@ -40,7 +40,7 @@ const HeroSection = () => {
           <div className="bg-[#1a1a1f]/90 backdrop-blur-sm border border-gray-700/50 rounded-lg px-6 py-4">
             <div className="text-gray-400 text-sm mb-1">Server IP</div>
             <div className="text-white font-mono text-lg tracking-wider">
-              {serverInfo.ip}
+              {serverInfo.ip}:{serverInfo.port}
             </div>
           </div>
           
